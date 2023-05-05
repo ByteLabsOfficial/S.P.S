@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 import json
 
 app = Flask(__name__)
+apiKey = "8881626825596828425145363414598667531018683"
 
 # Load the json file with the student scores
 with open("student_scores.json", "r", encoding="utf-8") as f:
@@ -24,7 +25,7 @@ def add_student():
     if not api_key or not isinstance(api_key, str):
         return jsonify({"error": "Invalid api key"}), 400
     # Check if the api key matches the secret string
-    if api_key != "secret123":
+    if api_key != apiKey:
         return jsonify({"error": "Unauthorized access"}), 401
     # Check if the student already exists in the json file
     if student_name in student_scores:
@@ -51,7 +52,7 @@ def change_student_score():
     if not api_key or not isinstance(api_key, str):
         return jsonify({"error": "Invalid api key"}), 400
     # Check if the api key matches the secret string
-    if api_key != "secret123":
+    if api_key != apiKey:
         return jsonify({"error": "Unauthorized access"}), 401
     # Check if the student exists in the json file
     if student_name not in student_scores:
@@ -116,13 +117,19 @@ def invest():
     # Update project stock and student scores
     if project_name not in project_stocks:
         project_stocks[project_name] = {
-            'CEO': '', 'Type': '', 'StockValue': 0, 'StockAmmount': 0}
+            'CEO': '', 'Type': '', 'StockValue': 2, 'StockAmmount': 0}
+
     stock_amount = project_stocks[project_name]['StockAmmount']
     stock_value = project_stocks[project_name]['StockValue']
+    if stock_value == 0:
+        return f"Error: {project_name}'s stock has been defunct"
+
     new_stock_amount = stock_amount + invest_points
-    # TODO: Make the stock_value better go up when there are more investments and not tank down when someone takes their money out
-    stock_value = (stock_value * stock_amount +
-                   invest_points) / new_stock_amount
+    if stock_amount == 0:
+        stock_value = 2
+    else:
+        stock_value = (stock_value * stock_amount +
+                       invest_points) / (new_stock_amount / 2)
     project_stocks[project_name]['StockAmmount'] = new_stock_amount
     project_stocks[project_name]['StockValue'] = stock_value
     student_scores[student_name]['score'] -= invest_points
@@ -164,7 +171,7 @@ def withdraw():
         new_stock_value = 0
     else:
         new_stock_value = (stock_value * stock_amount -
-                           invested_points) / new_stock_amount
+                           invested_points) / (new_stock_amount * 2)
     profit_loss = (new_stock_value - stock_value) * invested_points
 
     # Update project stock and student scores
