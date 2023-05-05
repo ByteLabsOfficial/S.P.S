@@ -64,3 +64,22 @@ The stock market currently is based around the idea that different school projec
 - ```{"error": "Invalid student name"}``` - You didn't provide a string as student_name in the inputed json
 - ```{"error": "Student not found"}``` - The student_name you provided wasn't found in the student_scores.json file
 <br/><br/><br/><br/>
+
+### 4- /sign_in
+**Description:** checks if a student's password is true (useful for apps that want to allow students to gain and spend their points)<br/><br/>
+**Input:** a json consisting of a student_name and student_password<br/> An example would be: <br/>
+```
+{
+"student_name": "Sam",
+"student_password": "1234"
+}
+```
+</br></br>
+**Output:** a json with the format of</br>
+```{"message": "Student SAMPLE_STUDENT signed in successfully"}```<br/><br/>
+**Errors:**<br/>
+- ```{"error": "Invalid student name"}``` - You didn't provide a string as student_name in the inputed json
+- ```{"error": "Invalid student password"}``` - You didn't provide a string as student_password in the inputed json
+- ```{"error": "Student not found"}``` - The student_name you provided wasn't found in the student_scores.json file
+- ```{"error": "Wrong password"}``` - The student_password you provided wasn't correct
+<br/><br/><br/><br/>
