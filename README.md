@@ -17,7 +17,7 @@ The stock market currently is based around the idea that different school projec
 "api_key": "8881626825596828425145363414598667531018683"
 }
 ```
-</br></br>
+</br><br/>
 **Output:** a json with the format of</br>
 ```{"message": "Student SAMPLE_STUDENT added with score 10 and password STUDENT_PASSWORD"}```<br/><br/>
 **Errors:**<br/>
@@ -46,5 +46,21 @@ The stock market currently is based around the idea that different school projec
 - ```{"error": "Invalid student score"}``` - You didn't provide an int as student_score in the inputed json
 - ```{"error": "Invalid api key"}``` - You didn't provide a string as api_key in the inputed json
 - ```{"error": "Unauthorized access"}``` - You didn't provide the correct api_key in the inputed json
+- ```{"error": "Student not found"}``` - The student_name you provided wasn't found in the student_scores.json file
+<br/><br/><br/><br/>
+
+### 3- /read_student_score
+**Description:** returns a student's score<br/><br/>
+**Input:** a json consisting of a student_name<br/> An example would be: <br/>
+```
+{
+"student_name": "Sam"
+}
+```
+</br></br>
+**Output:** a json with the format of</br>
+```{"student_name": "SAMPLE_STUDENT", "student_score": 10}```<br/><br/>
+**Errors:**<br/>
+- ```{"error": "Invalid student name"}``` - You didn't provide a string as student_name in the inputed json
 - ```{"error": "Student not found"}``` - The student_name you provided wasn't found in the student_scores.json file
 <br/><br/><br/><br/>
