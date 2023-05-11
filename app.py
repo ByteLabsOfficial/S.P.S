@@ -4,15 +4,13 @@ import json
 app = Flask(__name__)
 apiKey = "8881626825596828425145363414598667531018683"
 
-# Load the json file with the student scores
-with open("student_scores.json", "r", encoding="utf-8") as f:
-    student_scores = json.load(f)
-with open('ProjectStocks.json') as f:
-    project_stocks = json.load(f)
-
 
 @app.route("/add_student", methods=["POST"])
 def add_student():
+    # Load the json files
+    with open("student_scores.json", "r", encoding="utf-8") as f:
+        student_scores = json.load(f)
+
     # Get the student name, password and api key from the request body
     student_name = request.json.get("student_name")
     student_password = request.json.get("student_password")
@@ -40,6 +38,10 @@ def add_student():
 
 @app.route("/change_student_score", methods=["PUT"])
 def change_student_score():
+    # Load the json files
+    with open("student_scores.json", "r", encoding="utf-8") as f:
+        student_scores = json.load(f)
+
     # Get the student name, score and api key from the request body
     student_name = request.json.get("student_name")
     student_score = request.json.get("student_score")
@@ -67,6 +69,10 @@ def change_student_score():
 
 @app.route("/read_student_score", methods=["GET"])
 def read_student_score():
+    # Load the json files
+    with open("student_scores.json", "r", encoding="utf-8") as f:
+        student_scores = json.load(f)
+
     # Get the student name from the query string
     student_name = request.json.get("student_name")
     print(student_name)
@@ -82,6 +88,10 @@ def read_student_score():
 
 @app.route("/sign_in", methods=["POST"])
 def sign_in():
+    # Load the json files
+    with open("student_scores.json", "r", encoding="utf-8") as f:
+        student_scores = json.load(f)
+
     # Get the student name and password from the request body
     student_name = request.json.get("student_name")
     student_password = request.json.get("student_password")
@@ -102,6 +112,12 @@ def sign_in():
 
 @app.route('/invest', methods=['POST'])
 def invest():
+    # Load the json files
+    with open("student_scores.json", "r", encoding="utf-8") as f:
+        student_scores = json.load(f)
+    with open('ProjectStocks.json') as f:
+        project_stocks = json.load(f)
+
     # Parse request data
     data = request.get_json()
     student_name = data['student_name']
@@ -111,27 +127,32 @@ def invest():
     # Check if student exists and has enough points to invest
     if student_name not in student_scores:
         return f"Error: {student_name} is not a valid student name"
-    if student_scores[student_name]['score'] < invest_points:
-        return f"Error: {student_name} does not have enough points to invest {invest_points}"
 
     # Update project stock and student scores
     if project_name not in project_stocks:
         project_stocks[project_name] = {
             'CEO': '', 'Type': '', 'StockValue': 2, 'StockAmmount': 0}
 
+    current_student_score = student_scores[student_name]['score']
     stock_amount = project_stocks[project_name]['StockAmmount']
+    stock_possible_sell = project_stocks[project_name]['StockPossibleSell']
+    stock_selled = project_stocks[project_name]['SelledStocks']
     stock_value = project_stocks[project_name]['StockValue']
+    if current_student_score < invest_points * stock_value:
+        return f"Error: {student_name} does not have enough points to invest {invest_points}"
+    if (invest_points) > ((stock_amount * stock_possible_sell) - stock_selled):
+        return f"Error: {project_name} only has {(stock_amount * stock_possible_sell) - stock_selled} stock amount left for selling"
+
+    new_stock_selled = stock_selled + invest_points
+    current_student_score -= invest_points * stock_value
     if stock_value == 0:
         return f"Error: {project_name}'s stock has been defunct"
 
-    new_stock_amount = stock_amount + invest_points
-    if stock_amount == 0:
-        stock_value = 2
-    else:
-        stock_value = (stock_value * stock_amount +
-                       invest_points) / (new_stock_amount / 2)
-    project_stocks[project_name]['StockAmmount'] = new_stock_amount
-    project_stocks[project_name]['StockValue'] = stock_value
+    # ! Stock value isn't properly
+    stock_value += invest_points * (stock_value / 200)
+
+    project_stocks[project_name]['SelledStocks'] = new_stock_selled
+    project_stocks[project_name]['StockValue'] = float("%.5f" % stock_value)
     student_scores[student_name]['score'] -= invest_points
     if project_name not in student_scores[student_name]:
         student_scores[student_name][project_name] = invest_points
@@ -149,10 +170,17 @@ def invest():
 
 @app.route('/withdraw', methods=['POST'])
 def withdraw():
+    # Load the json files
+    with open("student_scores.json", "r", encoding="utf-8") as f:
+        student_scores = json.load(f)
+    with open('ProjectStocks.json') as f:
+        project_stocks = json.load(f)
+
     # Parse request data
     data = request.get_json()
     student_name = data['student_name']
     project_name = data['project_name']
+    withdraw_points = data['withdraw_points']
 
     # Check if student and project exist and if the student invested in the project
     if student_name not in student_scores:
@@ -163,21 +191,20 @@ def withdraw():
         return f"Error: {student_name} did not invest in {project_name}"
 
     # Calculate profit/loss based on stock value change
-    invested_points = student_scores[student_name][project_name]
-    stock_amount = project_stocks[project_name]['StockAmmount']
+    # invested_points = student_scores[student_name][project_name] - withdraw_points
+    invested_points = withdraw_points
+    selled_stocks = project_stocks[project_name]['SelledStocks']
     stock_value = project_stocks[project_name]['StockValue']
-    new_stock_amount = stock_amount - invested_points
-    if new_stock_amount == 0:
-        new_stock_value = 0
-    else:
-        new_stock_value = (stock_value * stock_amount -
-                           invested_points) / (new_stock_amount * 2)
-    profit_loss = (new_stock_value - stock_value) * invested_points
+    new_selled_stocks = selled_stocks - invested_points
+    # ! Handle Stock Value
+    stock_value -= invested_points * (stock_value / 190)
+    # profit_loss = (new_stock_value - stock_value) * invested_points
 
     # Update project stock and student scores
-    project_stocks[project_name]['StockAmmount'] = new_stock_amount
-    project_stocks[project_name]['StockValue'] = new_stock_value
-    student_scores[student_name]['score'] += invested_points
+    project_stocks[project_name]['SelledStocks'] = new_selled_stocks
+    project_stocks[project_name]['StockValue'] = float("%.5f" % stock_value)
+    student_scores[student_name]['score'] += float(
+        "%.5f" % (invested_points * stock_value))
     del student_scores[student_name][project_name]
 
     # Write updated data to json files
@@ -186,4 +213,4 @@ def withdraw():
     with open('ProjectStocks.json', 'w') as f:
         json.dump(project_stocks, f)
 
-    return f"{student_name} withdrew {invested_points} points from {project_name} with a profit/loss of {profit_loss}"
+    return f"{student_name} withdrew {invested_points} points from {project_name} with a profit/loss of"
