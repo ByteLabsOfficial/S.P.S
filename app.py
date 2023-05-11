@@ -153,7 +153,8 @@ def invest():
 
     project_stocks[project_name]['SelledStocks'] = new_stock_selled
     project_stocks[project_name]['StockValue'] = float("%.5f" % stock_value)
-    student_scores[student_name]['score'] -= invest_points
+    student_scores[student_name]['score'] -= (
+        invest_points * stock_value) + (0.05 * invest_points)
     if project_name not in student_scores[student_name]:
         student_scores[student_name][project_name] = invest_points
     else:
@@ -203,6 +204,7 @@ def withdraw():
     # Update project stock and student scores
     project_stocks[project_name]['SelledStocks'] = new_selled_stocks
     project_stocks[project_name]['StockValue'] = float("%.5f" % stock_value)
+    print(student_scores[student_name]['score'], invested_points, stock_value)
     student_scores[student_name]['score'] += float(
         "%.5f" % (invested_points * stock_value))
     del student_scores[student_name][project_name]

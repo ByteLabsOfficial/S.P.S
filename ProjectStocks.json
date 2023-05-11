@@ -1,1 +1,10 @@
-{"ByteLabs": {"CEO": "", "Type": "", "StockValue": 1.9959, "StockAmmount": 1000, "StockPossibleSell": 0.4, "SelledStocks": 0}}
+{
+    "ByteLabs": {
+        "CEO": "",
+        "Type": "",
+        "StockValue": 1.99795,
+        "StockAmmount": 1000,
+        "StockPossibleSell": 0.4,
+        "SelledStocks": 0
+    }
+}
